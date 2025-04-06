@@ -1,13 +1,9 @@
-import pandas as pd
-import yfinance as yf
 import streamlit as st
-from datetime import datetime, timedelta
-import time
-
 st.set_page_config(page_title="Global Disruption Portfolio Dashboard", layout="wide")
 
-""" App title """
-st.title("Live Global Disruption Portfolio Dashboard")
+import pandas as pd
+import yfinance as yf
+from datetime import datetime, timedelta
 
 """ Portfolio definition """
 portfolio = {
@@ -31,14 +27,14 @@ portfolio = {
     'TLT': 0.05
 }
 
-""" Sidebar controls """
+""" Sidebar settings """
 st.sidebar.header("Settings")
 start_date = st.sidebar.date_input("Start Date", datetime.now() - timedelta(days=365))
 end_date = st.sidebar.date_input("End Date", datetime.now())
 initial_capital = st.sidebar.number_input("Initial Investment ($)", min_value=1000, value=10000, step=500)
 refresh_interval = st.sidebar.slider("Auto-Refresh Interval (seconds)", min_value=10, max_value=300, value=30, step=10)
 
-""" Fetch data with caching """
+""" Fetch price data """
 @st.cache_data
 def get_data(tickers, start, end):
     return yf.download(tickers, start=start, end=end, group_by='ticker', auto_adjust=True)
@@ -46,12 +42,12 @@ def get_data(tickers, start, end):
 tickers = list(portfolio.keys()) + ['^GSPC']
 data = get_data(tickers, start_date, end_date)
 
-""" Weight cleanup """
+""" Weight filtering """
 valid_tickers = [ticker for ticker in portfolio if ticker in data.columns.levels[0]]
 weights = {ticker: portfolio[ticker] for ticker in valid_tickers}
 weights = {k: v / sum(weights.values()) for k, v in weights.items()}
 
-""" Return calculations """
+""" Calculate performance """
 returns = pd.DataFrame({ticker: data[ticker]['Close'].pct_change() for ticker in weights}).fillna(0)
 portfolio_returns = (returns * pd.Series(weights)).sum(axis=1)
 portfolio_cum = (1 + portfolio_returns).cumprod()
@@ -61,7 +57,7 @@ sp500_returns = data['^GSPC']['Close'].pct_change().fillna(0)
 sp500_cum = (1 + sp500_returns).cumprod()
 sp500_value = sp500_cum * initial_capital
 
-""" Chart """
+""" Performance chart """
 st.subheader("Portfolio vs. S&P 500 Performance")
 st.line_chart(pd.DataFrame({
     'Portfolio ($)': portfolio_value,
@@ -75,6 +71,7 @@ col1.metric("Portfolio Return (%)", f"{(portfolio_cum[-1] - 1) * 100:.2f}")
 col2.metric("S&P 500 Return (%)", f"{(sp500_cum[-1] - 1) * 100:.2f}")
 col3.metric("Portfolio Value ($)", f"{portfolio_value[-1]:,.2f}")
 
-time.sleep(refresh_interval)
-st.rerurn()
-
+""" Auto-refresh every X seconds using meta tag """
+st.markdown(f"""
+    <meta http-equiv="refresh" content="{int(refresh_interval)}">
+""", unsafe_allow_html=True)
