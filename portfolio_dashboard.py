@@ -76,5 +76,5 @@ col2.metric("S&P 500 Return (%)", f"{(sp500_cum[-1] - 1) * 100:.2f}")
 col3.metric("Portfolio Value ($)", f"{portfolio_value[-1]:,.2f}")
 
 time.sleep(refresh_interval)
-st.experimental_return()
+st.rerurn()
 
