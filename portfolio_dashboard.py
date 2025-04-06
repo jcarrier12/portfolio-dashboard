@@ -2,6 +2,7 @@ import pandas as pd
 import yfinance as yf
 import streamlit as st
 from datetime import datetime, timedelta
+import time
 
 st.set_page_config(page_title="Global Disruption Portfolio Dashboard", layout="wide")
 
