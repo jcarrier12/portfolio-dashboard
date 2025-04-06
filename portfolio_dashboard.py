@@ -35,7 +35,7 @@ st.sidebar.header("Settings")
 start_date = st.sidebar.date_input("Start Date", datetime.now() - timedelta(days=365))
 end_date = st.sidebar.date_input("End Date", datetime.now())
 initial_capital = st.sidebar.number_input("Initial Investment ($)", min_value=1000, value=10000, step=500)
-refresh_interval = st.sidebar.slider("Auto-Refresh Interval (seconds)", ,min_value=10, max_value=300, value=30, step=10)
+refresh_interval = st.sidebar.slider("Auto-Refresh Interval (seconds)", min_value=10, max_value=300, value=30, step=10)
 
 """ Fetch data with caching """
 @st.cache_data
